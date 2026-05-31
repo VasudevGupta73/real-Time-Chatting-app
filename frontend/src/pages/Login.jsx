@@ -2,6 +2,8 @@ import React from 'react'
 import { useNavigate } from 'react-router-dom';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import { serverUrl } from '../main';
+import { setUserData } from '../../redux/userSlice';
+import { useDispatch, useSelector } from 'react-redux';
 function Login() {
     let navigate = useNavigate();
     const [show, setShow] = React.useState(false);
@@ -11,6 +13,9 @@ function Login() {
 
     let [loading, setLoading] = React.useState(false);
     const [error, setError] = React.useState('');
+    const dispatch = useDispatch();
+    const { userData } = useSelector((state) => state.user);
+
     const handleLogin = async (e) => {
         e.preventDefault();
         setLoading(true);
@@ -21,6 +26,7 @@ function Login() {
                 headers: {
                     'Content-Type': 'application/json'
                 },
+                credentials: 'include',
                 body: JSON.stringify({
                     email,
                     password
@@ -37,13 +43,13 @@ function Login() {
             }
 
             // Success logic (e.g., store token, navigate)
-            console.log('Login successful:', data);
-            // Add your success handling here, like localStorage.setItem('token', data.token);
-            // navigate('/dashboard'); // Or wherever after login
+
+            dispatch(setUserData(data.user));
             setLoading(false);
+            navigate('/');
         } catch (error) {
             // Handle network errors
-            console.log(error);
+
             setError('Network error. Please try again.');
             setLoading(false);
         }

@@ -2,39 +2,46 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import { serverUrl } from '../main';
+import { setUserData } from '../../redux/userSlice';
+import { useDispatch, useSelector } from 'react-redux';
 function SignUp() {
     let navigate = useNavigate();
     const [show, setShow] = React.useState(false);
     const [username, setUsername] = React.useState('');
     const [email, setEmail] = React.useState('');
     const [password, setPassword] = React.useState('');
-    const [loading,setLoading] = React.useState(false);
-    const [error,setError] = React.useState('');
-    const handleSignUp = async (e) => {
-    e.preventDefault();
-        setLoading(true);
-    try {
-        let response = await fetch(`${serverUrl}/auth/signup`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                username,
-                email,
-                password
-            })
-        });
+    const [loading, setLoading] = React.useState(false);
+    const [error, setError] = React.useState('');
+    let { userData } = useSelector((state) => state.user);
 
-        let data = await response.json();
-        console.log(data);
-        setLoading(false);
-    } catch (error) {
-        console.log(error);
-        setLoading(false);
-        setError('An error occurred during sign up.');
+    let dispatch = useDispatch();
+    const handleSignUp = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        try {
+            let response = await fetch(`${serverUrl}/auth/signup`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'include',
+                body: JSON.stringify({
+                    username,
+                    email,
+                    password
+                })
+            });
+
+            let data = await response.json();
+            dispatch(setUserData(data.user));
+            setLoading(false);
+            navigate('/');
+        } catch (error) {
+
+            setLoading(false);
+            setError('An error occurred during sign up.');
+        }
     }
-}
     return (
         <div className='w-full h-[100vh] bg-slate-200 flex items-center justify-center'>
             <div className='w-full max-w-[500px] h-[600px] bg-white rounded-xl shadow-gray-400 shadow-lg flex flex-col gap-[30px]'>
@@ -53,7 +60,7 @@ function SignUp() {
                         </span>
                     </div>
                     {error && <p className='text-red-500'>{error}</p>}
-                    <button className='w-full bg-[#20c7ff] text-white font-bold py-[10px] rounded-lg hover:bg-[#1aa0c7] transition duration-300 mt-[20px] disabled={loading}'>{loading?"loading...":"Sign Up"}</button>
+                    <button className='w-full bg-[#20c7ff] text-white font-bold py-[10px] rounded-lg hover:bg-[#1aa0c7] transition duration-300 mt-[20px]' disabled={loading}>{loading ? "loading..." : "Sign Up"}</button>
                     <p className='mx-auto cursor-pointer' onClick={() => navigate('/login')}>
                         Already have an account? <span className='text-blue-500 hover:underline'>Login</span>
                     </p>
